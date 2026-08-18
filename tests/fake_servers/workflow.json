@@ -1,0 +1,6 @@
+{
+  "7": {"class_type": "KSampler", "inputs": {"seed": 1, "steps": 20, "model": ["4", 0]}},
+  "75:74": {"class_type": "CLIPTextEncode", "inputs": {"text": "old prompt", "clip": ["4", 1]}},
+  "10": {"class_type": "LoadImage", "inputs": {"image": "example.png"}},
+  "9": {"class_type": "SaveImage", "inputs": {"images": ["7", 0], "filename_prefix": "ComfyUI"}}
+}
