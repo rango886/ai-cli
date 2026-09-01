@@ -7,7 +7,7 @@ from typing import Annotated
 
 import typer
 
-from ..core.imageparams import ImageRequest, build_request, with_images
+from ..core.imageparams import build_request, with_images
 from ..errors import ExitCode
 from ..images import client as api
 from ..images.save import Saved, save_response
@@ -37,7 +37,7 @@ def generate(
     model: Annotated[str, typer.Option("--model")] = "gpt-image-2",
     size: Annotated[str, typer.Option("--size")] = "auto",
     quality: Annotated[str, typer.Option("--quality")] = "auto",
-    background: Annotated[str, typer.Option("--background", help="gpt-image-2 会被强制为 auto")] = "auto",
+    background: Annotated[str, typer.Option("--background", help="背景，原样透传给接口")] = "auto",
     number: Annotated[str, typer.Option("--number", help="生成张数")] = "1",
     output_path: Annotated[Path, typer.Option("--output-path", help="图片与参数记录的落盘目录")] = Path("."),
     timeout: Annotated[float, typer.Option("--timeout", help="单次请求超时秒数")] = 300.0,
@@ -51,7 +51,6 @@ def generate(
             prompt=prompt, model=model, size=size, quality=quality,
             background=background, number=number,
         )
-        _warn_overrides(request)
         client = api.make_client(timeout=timeout, max_retries=max_retries)
         response = api.generate(client, request)
         return _saved_output(save_response(response, request, output_path, endpoint="/images/generations"))
@@ -67,7 +66,7 @@ def edit(
     model: Annotated[str, typer.Option("--model")] = "gpt-image-2",
     size: Annotated[str, typer.Option("--size")] = "auto",
     quality: Annotated[str, typer.Option("--quality")] = "auto",
-    background: Annotated[str, typer.Option("--background", help="gpt-image-2 会被强制为 auto")] = "auto",
+    background: Annotated[str, typer.Option("--background", help="背景，原样透传给接口")] = "auto",
     number: Annotated[str, typer.Option("--number", help="生成张数")] = "1",
     output_path: Annotated[Path, typer.Option("--output-path", help="图片与参数记录的落盘目录")] = Path("."),
     timeout: Annotated[float, typer.Option("--timeout", help="单次请求超时秒数")] = 300.0,
@@ -84,17 +83,11 @@ def edit(
             ),
             tuple(input_image),
         )
-        _warn_overrides(request)
         client = api.make_client(timeout=timeout, max_retries=max_retries)
         response = api.edit(client, request)
         return _saved_output(save_response(response, request, output_path, endpoint="/images/edits"))
 
     run(output_format, produce)
-
-
-def _warn_overrides(request: ImageRequest) -> None:
-    for field, change in request.overrides.items():
-        note(f"override {field}: {change}")
 
 
 def _saved_output(saved: Saved) -> Output:

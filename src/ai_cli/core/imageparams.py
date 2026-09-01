@@ -1,30 +1,25 @@
 """OpenAI 图片接口的请求体构造。纯函数。
 
-不校验取值（model/size/quality/background 由上游负责报错），只做两件事：
-1. 把 CLI 的字符串参数装配成请求体；
-2. 应用已知的模型约束，并把“我改了你的参数”如实记录下来。
+不校验取值（model/size/quality/background 由上游负责报错），只把 CLI 的字符串参数
+装配成请求体，参数原样透传。
 """
 
 from __future__ import annotations
 
 import base64
 import mimetypes
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
 from ..errors import input_error
 
-# gpt-image-2 只接受 background=auto，其余取值上游会直接报错。
-FORCED_AUTO_BACKGROUND_MODELS = frozenset({"gpt-image-2"})
-
 
 @dataclass(frozen=True)
 class ImageRequest:
-    """一次生成/编辑请求：body 直接发给接口，overrides 用于诚实地告知调用方。"""
+    """一次生成/编辑请求：body 直接发给接口。"""
 
     body: Mapping[str, Any]
-    overrides: Mapping[str, str] = field(default_factory=dict)
 
 
 def build_request(
@@ -36,10 +31,6 @@ def build_request(
     background: str,
     number: str,
 ) -> ImageRequest:
-    overrides: dict[str, str] = {}
-    if model in FORCED_AUTO_BACKGROUND_MODELS and background != "auto":
-        overrides["background"] = f"{background!r} → 'auto'（{model} 只支持 auto）"
-        background = "auto"
     body = {
         "model": model,
         "prompt": prompt,
@@ -48,13 +39,13 @@ def build_request(
         "background": background,
         "n": _as_count(number),
     }
-    return ImageRequest(body, overrides)
+    return ImageRequest(body)
 
 
 def with_images(request: ImageRequest, paths: tuple[Path, ...]) -> ImageRequest:
     """给编辑请求补上 images：本地文件读成 base64 data URL。"""
     images = [{"image_url": data_url(p)} for p in paths]
-    return ImageRequest({**request.body, "images": images}, request.overrides)
+    return ImageRequest({**request.body, "images": images})
 
 
 def data_url(path: Path) -> str:

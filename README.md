@@ -112,8 +112,7 @@ ai-cli openai-image edit --prompt "把图一的帽子戴在图二的人物上，
 ```
 
 - `--model`（默认 `gpt-image-2`）、`--size` / `--quality` / `--background` / `--number` 全部按字符串透传，
-  取值合法性由上游判定。唯一的例外：`gpt-image-2` 只支持 `background=auto`，会被强制改写，
-  并在 stderr 与 sidecar 的 `overrides` 里如实记录。
+  取值合法性由上游判定。
 - 输入图片读成 base64 data URL 后走 `images[].image_url` 传入。
 - 落盘命名：`提示词前20字符-序号-uuid.png`，例如 `生成个城市夜景-01-1b7a6a49.png`；
   同批共享一份参数记录 `生成个城市夜景-1b7a6a49.json`（含请求参数、覆盖项、usage、输出文件名，**不含 api key**）。

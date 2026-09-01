@@ -82,13 +82,12 @@ def test_inspect_skips_links():
     assert paths == ["7.inputs.seed", "7.inputs.steps", "75:74.inputs.text", "10.inputs.image"]
 
 
-def test_gpt_image_2_forces_auto_background():
+def test_background_is_passed_through():
     request = build_request(
         prompt="p", model="gpt-image-2", size="auto", quality="auto",
         background="transparent", number="1",
     )
-    assert request.body["background"] == "auto"
-    assert "background" in request.overrides
+    assert request.body["background"] == "transparent"
 
 
 def test_other_models_keep_background():
@@ -98,7 +97,6 @@ def test_other_models_keep_background():
     )
     assert request.body["background"] == "transparent"
     assert request.body["n"] == 2
-    assert not request.overrides
 
 
 def test_slug_strips_illegal_characters_and_truncates():

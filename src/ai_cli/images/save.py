@@ -62,7 +62,6 @@ def save_response(
             {
                 "endpoint": endpoint,
                 "request": dict(request.body) | _hide_images(request.body),
-                "overrides": dict(request.overrides),
                 "response": _without_payload(response),
                 "images": [p.name for p in paths],
                 "failures": failures,
