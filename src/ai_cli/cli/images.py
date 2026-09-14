@@ -39,7 +39,8 @@ def generate(
     quality: Annotated[str, typer.Option("--quality")] = "auto",
     background: Annotated[str, typer.Option("--background", help="背景，原样透传给接口")] = "auto",
     number: Annotated[str, typer.Option("--number", help="生成张数")] = "1",
-    output_path: Annotated[Path, typer.Option("--output-path", help="图片与参数记录的落盘目录")] = Path("."),
+    output_path: Annotated[Path, typer.Option("--output-path", help="图片落盘目录")] = Path("."),
+    save_params: Annotated[bool, typer.Option("--save-params/--no-save-params", help="是否额外写一份参数记录 json（默认不写）")] = False,
     timeout: Annotated[float, typer.Option("--timeout", help="单次请求超时秒数")] = 300.0,
     max_retries: Annotated[int, typer.Option("--max-retries")] = 2,
     fmt: FormatOption = None,
@@ -53,7 +54,12 @@ def generate(
         )
         client = api.make_client(timeout=timeout, max_retries=max_retries)
         response = api.generate(client, request)
-        return _saved_output(save_response(response, request, output_path, endpoint="/images/generations"))
+        return _saved_output(
+            save_response(
+                response, request, output_path,
+                endpoint="/images/generations", save_params=save_params,
+            )
+        )
 
     run(output_format, produce)
 
@@ -68,7 +74,8 @@ def edit(
     quality: Annotated[str, typer.Option("--quality")] = "auto",
     background: Annotated[str, typer.Option("--background", help="背景，原样透传给接口")] = "auto",
     number: Annotated[str, typer.Option("--number", help="生成张数")] = "1",
-    output_path: Annotated[Path, typer.Option("--output-path", help="图片与参数记录的落盘目录")] = Path("."),
+    output_path: Annotated[Path, typer.Option("--output-path", help="图片落盘目录")] = Path("."),
+    save_params: Annotated[bool, typer.Option("--save-params/--no-save-params", help="是否额外写一份参数记录 json（默认不写）")] = False,
     timeout: Annotated[float, typer.Option("--timeout", help="单次请求超时秒数")] = 300.0,
     max_retries: Annotated[int, typer.Option("--max-retries")] = 2,
     fmt: FormatOption = None,
@@ -85,7 +92,12 @@ def edit(
         )
         client = api.make_client(timeout=timeout, max_retries=max_retries)
         response = api.edit(client, request)
-        return _saved_output(save_response(response, request, output_path, endpoint="/images/edits"))
+        return _saved_output(
+            save_response(
+                response, request, output_path,
+                endpoint="/images/edits", save_params=save_params,
+            )
+        )
 
     run(output_format, produce)
 
@@ -93,7 +105,7 @@ def edit(
 def _saved_output(saved: Saved) -> Output:
     data = {
         "images": [str(p) for p in saved.images],
-        "sidecar": str(saved.sidecar),
+        "sidecar": str(saved.sidecar) if saved.sidecar else None,
         "failures": list(saved.failures),
     }
     lines = [str(p) for p in saved.images]

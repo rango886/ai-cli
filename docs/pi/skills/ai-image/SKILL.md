@@ -83,8 +83,8 @@ ai-cli comfyui workflow inspect wf.json --filter Sampler --format json
 
 ## OpenAI 兼容接口
 
-地址与密钥取自 `HUB_BASE_URL` / `HUB_API_KEY`。默认模型 `gpt-image-2`，支持透明背景（`--background transparent`，出 PNG 带 alpha）。
-落盘 `提示词前20字-序号-uuid.png`，同批附一份参数 sidecar json。`--background` 原样透传，取值非法由上游报错。
+地址与密钥取自 `HUB_BASE_URL` / `HUB_API_KEY`。默认模型 `gpt-image-2.5-flare`，支持透明背景（`--background transparent`，出 PNG 带 alpha）。
+落盘 `提示词前20字-序号-uuid.png`；**默认不写参数记录 json**，需要留档时加 `--save-params`。`--background` 原样透传，取值非法由上游报错。
 
 常用：
 
@@ -117,25 +117,26 @@ wait
 ```bash
 ai-cli openai-image generate \
   --prompt '提示词' \
-  --model gpt-image-2 \
+  --model gpt-image-2.5-flare \
   --size auto \            # auto 或 1024x1024 等
   --quality low \          # auto/low/medium/high，默认用 low
   --background auto \      # auto/transparent/opaque，原样透传
   --number 1 \
   --output-path out \
+  --no-save-params \      # 默认不写参数记录 json；要留档改 --save-params
   --timeout 300 \
   --max-retries 2 \
   --format json
 
 ai-cli openai-image edit --prompt '提示词' \
   --input-image a.png --input-image b.png \
-  --model gpt-image-2 --size auto --quality low --background auto \
-  --number 1 --output-path out --timeout 300 --max-retries 2 --format json
+  --model gpt-image-2.5-flare --size auto --quality low --background auto \
+  --number 1 --output-path out --save-params --timeout 300 --max-retries 2 --format json
 ```
 
 ## 最佳实践
 
-选路（默认优先 `gpt-image-2`，即 `openai-image generate/edit`）：
+选路（默认优先 `gpt-image-2.5-flare`，即 `openai-image generate/edit`）：
 
 1. **文生图、多图合成、自然语言改图、要效果好** → `openai-image`，首选，不必碰工作流。
 2. **要透明背景的新素材**（图标、贴纸、UI 元素） → `openai-image` 直接加 `--background transparent`，一步到位，不要先出白底再抠。
@@ -148,6 +149,7 @@ ai-cli openai-image edit --prompt '提示词' \
 
 - `--quality` 默认 `low`（快且省钱）；**只有用户明确写 `--quality high` 时才用 `high`**。
 - `--size auto` 让模型跟随输入比例，除非用户指定尺寸。
+- 参数记录 json 默认不写；只有用户明确要留档/复现参数时才加 `--save-params`。
 - 多张变体优先 `--number N`（一次请求），跨提示词才用 shell 后台并发。
 
 协作习惯：

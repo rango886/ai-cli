@@ -115,7 +115,8 @@ ai-cli openai-image edit --prompt "把图一的帽子戴在图二的人物上，
   取值合法性由上游判定。
 - 输入图片读成 base64 data URL 后走 `images[].image_url` 传入。
 - 落盘命名：`提示词前20字符-序号-uuid.png`，例如 `生成个城市夜景-01-1b7a6a49.png`；
-  同批共享一份参数记录 `生成个城市夜景-1b7a6a49.json`（含请求参数、覆盖项、usage、输出文件名，**不含 api key**）。
+  加 `--save-params` 才额外写一份参数记录 `生成个城市夜景-1b7a6a49.json`（含请求参数、覆盖项、usage、
+  输出文件名，**不含 api key**）；默认不写。
 
 ## 结构
 
@@ -125,7 +126,7 @@ src/ai_cli/
   render.py     输出的唯一出口（Output / emit_error / note）
   core/         纯函数：--values 解析与打补丁、workflow 自省、文件命名、请求体装配
   comfy/        ComfyUI：client(单次调用) / service(上传+补丁+入队) / waiting(轮询) / outputs(产物落盘)
-  images/       OpenAI 兼容图片接口：client(调用) / save(落盘与 sidecar)
+  images/       OpenAI 兼容图片接口：client(调用) / save(落盘与可选 sidecar)
   cli/          Typer 命令：解析参数 → 调下层 → run() 收尾
 ```
 

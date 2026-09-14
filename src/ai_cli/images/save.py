@@ -19,7 +19,7 @@ class Saved:
     """一次请求的落盘结果。failures 非空表示部分成功。"""
 
     images: tuple[Path, ...]
-    sidecar: Path
+    sidecar: Path | None
     failures: tuple[str, ...] = ()
 
 
@@ -29,8 +29,9 @@ def save_response(
     directory: Path,
     *,
     endpoint: str,
+    save_params: bool = False,
 ) -> Saved:
-    """写出图片与 sidecar。sidecar 里绝不包含 api key。"""
+    """写出图片；save_params 为真时额外写一份 sidecar。sidecar 里绝不包含 api key。"""
     items = response.get("data")
     if not isinstance(items, list) or not items:
         raise AppError(
@@ -55,6 +56,9 @@ def save_response(
         target = directory / image_name(prompt, index, uid, ext)
         target.write_bytes(payload)
         paths.append(target)
+
+    if not save_params:
+        return Saved(tuple(paths), None, tuple(failures))
 
     sidecar = directory / sidecar_name(prompt, uid)
     sidecar.write_text(
